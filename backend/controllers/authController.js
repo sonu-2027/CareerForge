@@ -28,7 +28,8 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @access  Public
 const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, password } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: "Please provide name, email, and password." });
@@ -58,7 +59,8 @@ const signup = async (req, res) => {
 // @access  Public
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Please provide email and password." });

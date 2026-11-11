@@ -1,36 +1,45 @@
 import { Search, MapPin } from "lucide-react";
 
-function SearchBar() {
+function SearchBar({ keyword, location, onKeywordChange, onLocationChange, onSubmit }) {
   return (
-    <div className="w-8xl h-17 mx-8 bg-white rounded-full shadow-lg flex items-center px-4 py-2">
-      {/* Job Search */}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit();
+      }}
+      className="mx-8 bg-white rounded-full shadow-lg flex items-center px-4 py-2"
+    >
       <div className="flex items-center flex-1 gap-2 px-3">
         <Search className="text-gray-400" size={18} />
         <input
           type="text"
-          placeholder="Job title or keyword"
+          value={keyword}
+          onChange={(e) => onKeywordChange(e.target.value)}
+          placeholder="Job title, keyword or company"
           className="w-full outline-none text-sm"
         />
       </div>
 
-      {/* Divider */}
       <div className="h-6 w-px bg-gray-300"></div>
 
-      {/* Location */}
       <div className="flex items-center flex-1 gap-2 px-3">
         <MapPin className="text-gray-400" size={18} />
         <input
           type="text"
+          value={location}
+          onChange={(e) => onLocationChange(e.target.value)}
           placeholder="Add country or city"
           className="w-full outline-none text-sm"
         />
       </div>
 
-      {/* Button */}
-      <button className="ml-3 bg-[#6978bb] hover:bg-[#323464] text-white text-md px-9 py-4 rounded-full transition">
+      <button
+        type="submit"
+        className="ml-3 bg-[#6978bb] hover:bg-[#323464] text-white px-9 py-3 rounded-full transition cursor-pointer"
+      >
         Search
       </button>
-    </div>
+    </form>
   );
 }
 

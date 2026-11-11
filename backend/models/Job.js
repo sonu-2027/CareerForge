@@ -32,7 +32,7 @@ const jobSchema = new mongoose.Schema(
     description: {
       type: String,
       required: [true, "Job description is required"],
-      maxlength: [5000, "Description cannot exceed 5000 characters"],
+      maxlength: [50000, "Description cannot exceed 50000 characters"],
     },
     source: {
       type: String,
@@ -54,6 +54,7 @@ const jobSchema = new mongoose.Schema(
 jobSchema.index({ location: 1 });
 jobSchema.index({ jobType: 1 });
 jobSchema.index({ company: 1 });
+jobSchema.index({ applyLink: 1 });
 jobSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Job", jobSchema);

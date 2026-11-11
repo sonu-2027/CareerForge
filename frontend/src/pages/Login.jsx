@@ -1,11 +1,16 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import API, { errorMessage } from "../services/api";
+import { saveSession } from "../services/auth";
 import bgImage from "../assets/LoginComp.webp";
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = location.state?.from || "/dashboard";
 
   const handleChange = (e) => {
     setFormData({
@@ -16,23 +21,19 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
     try {
-      const API = import.meta.env.VITE_API_URL;
-
-      const res = await axios.post(`${API}/api/auth/login`, {
+      const res = await API.post("/auth/login", {
         email: formData.email,
         password: formData.password,
       });
-
-      // ✅ store user + token
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      alert("Login Successful!");
-      navigate("/dashboard"); // ✅ redirect
+      saveSession(res.data);
+      navigate(redirectTo, { replace: true });
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed.");
-      console.error(err);
+      setError(errorMessage(err, "Login failed."));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -53,7 +54,7 @@ function Login() {
             placeholder="Email"
             required
             onChange={handleChange}
-            className="bg-transparent border-b border-[#e3bfb2] text-white placeholder-white/70 p-2 w-150 mb-6 outline-none"
+            className="bg-transparent border-b border-[#e3bfb2] text-white placeholder-white/70 p-2 w-full mb-6 outline-none"
           />
 
           <input
@@ -79,8 +80,17 @@ function Login() {
             </div>
           </div>
 
-          <button className="ml-50 bg-[#6978bb] w-40 mt-12 hover:bg-[#323464] text-white px-8 py-3 rounded-full text-xl font-medium transition-colors">
-            Login
+          {error && (
+            <p className="mt-6 text-sm text-white bg-black/20 rounded px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            disabled={submitting}
+            className="ml-50 bg-[#6978bb] w-40 mt-12 hover:bg-[#323464] disabled:opacity-60 text-white px-8 py-3 rounded-full text-xl font-medium transition-colors cursor-pointer"
+          >
+            {submitting ? "..." : "Login"}
           </button>
         </form>
 

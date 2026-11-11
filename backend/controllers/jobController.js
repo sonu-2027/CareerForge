@@ -1,4 +1,5 @@
 const Job = require("../models/Job");
+const escapeRegex = require("../utils/escapeRegex");
 
 // @desc    Get all jobs with pagination and filtering
 // @route   GET /api/jobs
@@ -18,25 +19,26 @@ const getJobs = async (req, res) => {
     const filter = {};
 
     if (location) {
-      filter.location = { $regex: location, $options: "i" }; // case-insensitive
+      filter.location = { $regex: escapeRegex(location), $options: "i" }; // case-insensitive
     }
     if (jobType) {
-      filter.jobType = { $regex: jobType, $options: "i" };
+      filter.jobType = { $regex: escapeRegex(jobType), $options: "i" };
     }
     if (company) {
-      filter.company = { $regex: company, $options: "i" };
+      filter.company = { $regex: escapeRegex(company), $options: "i" };
     }
     if (search) {
+      const safeSearch = escapeRegex(search);
       filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { company: { $regex: search, $options: "i" } },
+        { title: { $regex: safeSearch, $options: "i" } },
+        { description: { $regex: safeSearch, $options: "i" } },
+        { company: { $regex: safeSearch, $options: "i" } },
       ];
     }
 
     // Pagination
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // cap at 100
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10)); // cap at 100
     const skip = (pageNum - 1) * limitNum;
 
     const [jobs, totalJobs] = await Promise.all([
@@ -57,6 +59,46 @@ const getJobs = async (req, res) => {
         hasPrevPage: pageNum > 1,
       },
       jobs,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error. Please try again." });
+  }
+};
+
+// @desc    List companies with their number of open roles
+// @route   GET /api/jobs/companies?search=&limit=
+// @access  Public
+const getCompanies = async (req, res) => {
+  try {
+    const { search } = req.query;
+    const limitNum = Math.min(60, Math.max(1, parseInt(req.query.limit, 10) || 24));
+
+    const match = { company: { $type: "string", $ne: "" } };
+    if (search) match.company = { $regex: escapeRegex(search), $options: "i" };
+
+    const companies = await Job.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$company",
+          openRoles: { $sum: 1 },
+          locations: { $addToSet: "$location" },
+          jobTypes: { $addToSet: "$jobType" },
+        },
+      },
+      { $sort: { openRoles: -1, _id: 1 } },
+      { $limit: limitNum },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      count: companies.length,
+      companies: companies.map((c) => ({
+        name: c._id,
+        openRoles: c.openRoles,
+        locations: (c.locations || []).filter(Boolean).slice(0, 3),
+        jobTypes: (c.jobTypes || []).filter(Boolean),
+      })),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error. Please try again." });
@@ -145,4 +187,4 @@ const deleteJob = async (req, res) => {
   }
 };
 
-module.exports = { getJobs, getJobById, createJob, updateJob, deleteJob };
+module.exports = { getJobs, getJobById, getCompanies, createJob, updateJob, deleteJob };

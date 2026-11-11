@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API, { errorMessage } from "../services/api";
+import { saveSession } from "../services/auth";
 import bgImage from "../assets/SignUpComp.webp";
 
 function Signup() {
@@ -10,6 +11,8 @@ function Signup() {
     password: "",
   });
 
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -21,21 +24,17 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     try {
-      const API = import.meta.env.VITE_API_URL;
-
-      const res = await axios.post(`${API}/api/auth/signup`, form);
-
-      // ✅ store user
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      alert("Signup Successful!");
-      navigate("/dashboard"); // ✅ redirect
+      const res = await API.post("/auth/signup", form);
+      saveSession(res.data);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      alert(err.response?.data?.message || "Signup failed.");
-      console.error(err);
+      setError(errorMessage(err, "Signup failed."));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -55,6 +54,8 @@ function Signup() {
           <input
             name="name"
             placeholder="Full Name"
+            required
+            minLength={2}
             onChange={handleChange}
             className="bg-transparent border-b border-white text-white placeholder-white/70 p-2 w-full mb-6 outline-none"
           />
@@ -63,6 +64,7 @@ function Signup() {
             name="email"
             type="email"
             placeholder="Email"
+            required
             onChange={handleChange}
             className="bg-transparent border-b border-white text-white placeholder-white/70 p-2 w-full mb-6 outline-none"
           />
@@ -70,17 +72,26 @@ function Signup() {
           <input
             name="password"
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 6 characters)"
+            required
+            minLength={6}
             onChange={handleChange}
             className="bg-transparent border-b border-white text-white placeholder-white/70 p-2 w-full mb-8 outline-none"
           />
 
+          {error && (
+            <p className="text-sm text-white bg-black/20 rounded px-3 py-2">
+              {error}
+            </p>
+          )}
+
           <div className="mt-3">
             <button
               type="submit"
-              className="bg-[#6978bb] hover:bg-[#323464] text-white ml-56 px-8 py-3 rounded-full text-xl font-medium transition-colors"
+              disabled={submitting}
+              className="bg-[#6978bb] hover:bg-[#323464] disabled:opacity-60 text-white ml-56 px-8 py-3 rounded-full text-xl font-medium transition-colors cursor-pointer"
             >
-              Sign Up
+              {submitting ? "..." : "Sign Up"}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getJobs,
   getJobById,
+  getCompanies,
   createJob,
   updateJob,
   deleteJob,
@@ -12,6 +13,10 @@ const { protect } = require("../middleware/authMiddleware");
 // GET  /api/jobs       - Fetch all jobs (public, with pagination & filters)
 // POST /api/jobs       - Create a new job (protected)
 router.route("/").get(getJobs).post(protect, createJob);
+
+// GET  /api/jobs/companies - Companies with open-role counts (public).
+// NOTE: must be declared before "/:id" or "companies" is treated as an id.
+router.get("/companies", getCompanies);
 
 // GET    /api/jobs/:id  - Get single job (public)
 // PUT    /api/jobs/:id  - Update a job (protected)

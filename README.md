@@ -1,30 +1,31 @@
 # CareerForge 🚀
- 
-CareerForge is a full-stack career development platform designed to help students and job seekers enhance their employability and streamline their job search journey.
- 
+
+CareerForge is a full-stack job-search platform: browse aggregated jobs, filter and
+search them, explore companies, save jobs and manage your profile.
+
 ## Features
- 
-- 👤 User Authentication
-- 📄 Resume Management
-- 💼 Job Listings and Search
-- 📊 Personalized Career Insights
-- 🔍 Job Application Tracking
-- 📱 Responsive User Interface
- 
-## Tech Stack
- 
-### Frontend
-- React.js
-- Vite
-- Tailwind CSS
- 
-### Backend
-- Node.js
-- Express.js
- 
-### Database
-- MongoDB Atlas
- 
-### Deployment
-- Frontend: Vercel
-- Backend: Render
+
+- 👤 Sign up / log in (JWT), protected pages, profile editing
+- 💼 Job listings with search, location, job-type filters and pagination
+- 🏢 Companies page built from live job data (with "View Jobs" per company)
+- ❤️ Save / unsave jobs, job details page with apply link
+- ✉️ Contact form stored in the database
+
+## Tech stack
+
+React 19 + Vite + Tailwind CSS 4 · Node.js + Express · MongoDB Atlas · Vercel (frontend) / Render (backend)
+
+## Running locally
+
+```bash
+# backend  (see backend/README.md for the .env values)
+cd backend && npm install && cp .env.example .env && npm run dev
+
+# frontend
+cd frontend && npm install && cp .env.example .env && npm run dev
+```
+
+## Deployment
+
+- **Vercel (frontend):** set `VITE_API_URL` to your backend URL (e.g. `https://your-api.onrender.com`, no trailing slash) and redeploy.
+- **Render (backend):** set `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
