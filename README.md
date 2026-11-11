@@ -24,8 +24,3 @@ cd backend && npm install && cp .env.example .env && npm run dev
 # frontend
 cd frontend && npm install && cp .env.example .env && npm run dev
 ```
-
-## Deployment
-
-- **Vercel (frontend):** set `VITE_API_URL` to your backend URL (e.g. `https://your-api.onrender.com`, no trailing slash) and redeploy.
-- **Render (backend):** set `MONGO_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
